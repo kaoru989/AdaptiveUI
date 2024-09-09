@@ -1,70 +1,219 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+      import React, { useState, useEffect } from "react";
+      import {
+        View,
+        StyleSheet,
+        Image,
+        TextInput,
+        Platform,
+        Dimensions,
+        useWindowDimensions,
+        KeyboardAvoidingView,
+        StatusBar,
+        SafeAreaView,
+        TouchableWithoutFeedback,
+        ScrollView,
+        TouchableOpacity,
+        Text,
+        Appearance,
+        Keyboard,
+      } from "react-native";
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+      export default function AdaptiveUI() {
+        const window = useWindowDimensions();
+        const [orientation, setOrientation] = useState("portrait");
+        const screenWidth = Dimensions.get('window').width;
+        const buttonWidth = screenWidth / 2 - 20;
+        const [theme, setTheme] = useState(Appearance.getColorScheme() || "light");
+        const [keyboardVisible, setKeyboardVisible] = useState(false);
 
-export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({ ios: 'cmd + d', android: 'cmd + m' })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
-  );
-}
+        useEffect(() => {
+          const updateOrientation = () => {
+            const { width, height } = window;
+            setOrientation(width > height ? "landscape" : "portrait");
+          };
+        
+          updateOrientation();
+          const subscription = Dimensions.addEventListener(
+            "change",
+            updateOrientation
+          );
 
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
+          const colorSchemeListener = Appearance.addChangeListener(({ colorScheme }) => {
+            setTheme(colorScheme || "light"); 
+          });
+
+          const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
+          });
+          const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => { 
+          });
+
+          return () => subscription?.remove();
+          keyboardDidShowListener.remove();
+        keyboardDidHideListener.remove();
+        colorSchemeListener.remove();
+        }, [window]);
+
+        const toggleTheme = () => {
+          setTheme((prevTheme) => (prevTheme === "light" ? "dark" : "light"));
+        };
+
+        const styles = StyleSheet.create({
+          safeArea: {
+            flex: 1,
+            backgroundColor: theme === "light" ? "#f0f0f0" : "#222",
+          },
+          container: {
+            flex: 1,
+            padding: Platform.OS === "ios" ? 20 : 16,
+            justifyContent: "center",
+            alignItems: 'center',
+          },
+          header: {
+            paddingTop: 20,
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 20,
+            paddingBottom: 20,
+          },
+          title: {
+            fontSize: 24,
+            fontWeight: "bold",
+            color: theme === "light" ? "#333" : "#fff",
+          },
+          themeToggle: {
+            padding: 10,
+            backgroundColor: theme === "light" ? "#333" : "#f0f0f0",
+            borderRadius: 5,
+          },
+          themeToggleText: {
+            color: theme === "light" ? "#fff" : "#333",
+          },
+          content: {
+            flex: 1,
+          },
+          buttonsContainer: {
+            flexDirection: orientation === "portrait" ? "column" : "row",
+            justifyContent: "center",
+            alignItems: 'center',
+            marginBottom: 20,
+          },
+          button: {
+            width: orientation === "portrait" ? "100%" : "48%",
+            marginBottom: orientation === "portrait" ? 10 : 0,
+            backgroundColor: theme === "light" ? "#740001" : "#0A84FF",
+            padding: 15,
+            borderRadius: 5,
+            alignItems: "center",
+          },
+          buttonText: {
+            color: "#fff",
+            fontSize: 16,
+            fontWeight: "bold",
+          },
+          image: {
+            width: window.width * 0.8,
+            height:
+              orientation === "portrait" ? window.width * 0.6 : window.height * 0.3,
+            resizeMode: "contain",
+            alignSelf: "center",
+            marginBottom: 20,
+          },
+          input: {
+            borderWidth: 1,
+            borderColor: theme === "light" ? "#ccc" : "#666",
+            padding: 10,
+            marginBottom: 20,
+            color: theme === "light" ? "#333" : "#fff",
+            backgroundColor: theme === "light" ? "#fff" : "#444",
+          },
+          cardContainer: {
+            flexDirection: orientation === "portrait" ? "column" : "row",
+            justifyContent: "space-between",
+          },
+          card: {
+            width: orientation === "portrait" ? "100%" : "48%",
+            backgroundColor: theme === "light" ? "#fff" : "#333",
+            borderRadius: 10,
+            padding: 15,
+            marginBottom: 15,
+            ...Platform.select({
+              ios: {
+                shadowColor: theme === "light" ? "#000" : "#fff",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 4,
+              },
+              android: {
+                elevation: 4,
+              },
+            }),
+          },
+          cardTitle: {
+            fontSize: 18,
+            fontWeight: "bold",
+            marginBottom: 10,
+            color: theme === "light" ? "#333" : "#fff",
+          },
+          cardContent: {
+            fontSize: 14,
+            color: theme === "light" ? "#666" : "#ccc",
+          },
+        });
+
+        return (
+          <SafeAreaView style={styles.safeArea}>
+            <StatusBar
+              backgroundColor={theme === "light" ? "#f0f0f0" : "#222"}
+              barStyle={theme === "light" ? "dark-content" : "light-content"}
+              translucent={true}
+            />
+            <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+      >
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+                  <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+                  <View style={styles.content}>
+                <View style={styles.header}>
+                  <Text style={styles.title}>AdaptiveUI</Text>
+                  <TouchableOpacity style={styles.themeToggle} onPress={toggleTheme}>
+                    <Text style={styles.themeToggleText}>
+                      {theme === "light" ? "Dark Mode" : "Light Mode"}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+      <View>
+                <View style={styles.container}>
+            <TouchableOpacity style={[styles.button, { width: buttonWidth }]}>
+              <Text style={styles.buttonText}>Button A</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.button, { width: buttonWidth }]}>
+              <Text style={styles.buttonText}>Button B</Text>
+            </TouchableOpacity>
+          </View>
+                <View>
+            <Image
+              source={require('../../assets/ff.png')}
+              style={styles.image}
+            />
+          </View>
+
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Nhập văn bản"
+                    placeholderTextColor={theme === "light" ? "#999" : "#888"}
+                  />
+                    </View>
+                  </View>
+                </TouchableWithoutFeedback>
+              </ScrollView>
+            </KeyboardAvoidingView>
+          </SafeAreaView>
+        );
+      }
